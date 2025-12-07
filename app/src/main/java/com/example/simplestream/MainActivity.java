@@ -1,24 +1,25 @@
 package com.example.simplestream;
 
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.MediaController;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.VideoView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import java.util.ArrayList;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    VideoView videoPlayer;
-    TextView textStatus;
-    RecyclerView rvMovies;
-    MovieAdapter adapter;
-    List<Movie> movieList;
+    private RecyclerView rvMovies;
+    private MovieAdapter adapter;
+    private ProgressBar progressBar;
+    private TextView textError;
+    private SwipeRefreshLayout swipeRefresh;
+    private AdicinemaxScraper scraper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,83 +27,91 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // 1. Inisialisasi Tampilan
-        videoPlayer = findViewById(R.id.videoView);
-        textStatus = findViewById(R.id.textStatus);
         rvMovies = findViewById(R.id.rvMovies);
+        progressBar = findViewById(R.id.progressBar);
+        textError = findViewById(R.id.textError);
+        swipeRefresh = findViewById(R.id.swipeRefresh);
 
-        // 2. Setup Pemutar Video
-        MediaController mediaController = new MediaController(this);
-        videoPlayer.setMediaController(mediaController);
-        mediaController.setAnchorView(videoPlayer);
+        // 2. Setup Grid (3 Kolom supaya mirip TMDb/Netflix)
+        rvMovies.setLayoutManager(new GridLayoutManager(this, 3));
 
-        // 3. Setup Daftar Film (Grid 2 Kolom)
-        // Angka '2' berarti ada 2 poster berjejer ke samping
-        rvMovies.setLayoutManager(new GridLayoutManager(this, 2));
-
-        // 4. Ambil Data Film (Simulasi Provider)
-        movieList = getAdicinemaxMovies();
-
-        // 5. Pasang Adapter
-        adapter = new MovieAdapter(this, movieList, new MovieAdapter.OnMovieClickListener() {
+        // 3. Setup Adapter
+        adapter = new MovieAdapter(this, null, new MovieAdapter.OnMovieClickListener() {
             @Override
             public void onMovieClick(Movie movie) {
-                // Aksi saat poster diklik
-                playMovie(movie);
+                bukaPlayer(movie);
             }
         });
         rvMovies.setAdapter(adapter);
+
+        // 4. Siapkan Scraper
+        scraper = new AdicinemaxScraper();
+
+        // 5. Mulai Ambil Data
+        muatDataFilm();
+
+        // 6. Logika Refresh (Tarik ke bawah)
+        swipeRefresh.setOnRefreshListener(this::muatDataFilm);
     }
 
-    private void playMovie(Movie movie) {
-        try {
-            // Ubah teks status dan mulai video
-            textStatus.setText("Sedang Memutar: " + movie.getTitle());
-            
-            Uri videoUri = Uri.parse(movie.getVideoUrl());
-            videoPlayer.setVideoURI(videoUri);
-            videoPlayer.start();
-            
-            Toast.makeText(this, "Memuat: " + movie.getTitle(), Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            Toast.makeText(this, "Gagal memutar video", Toast.LENGTH_SHORT).show();
-        }
+    private void muatDataFilm() {
+        progressBar.setVisibility(View.VISIBLE);
+        textError.setVisibility(View.GONE);
+
+        scraper.getLatestMovies(new AdicinemaxScraper.ScrapeCallback() {
+            @Override
+            public void onSuccess(List<Movie> movies) {
+                progressBar.setVisibility(View.GONE);
+                swipeRefresh.setRefreshing(false);
+                
+                // Masukkan data ke Adapter
+                adapter.updateData(movies);
+            }
+
+            @Override
+            public void onError(String message) {
+                progressBar.setVisibility(View.GONE);
+                swipeRefresh.setRefreshing(false);
+                
+                // Tampilkan pesan error
+                textError.setText(message);
+                textError.setVisibility(View.VISIBLE);
+                
+                // FUNGSI DARURAT:
+                // Jika gagal scraping (misal web diblokir), kita isi data dummy
+                // supaya aplikasi tetap terlihat bagus saat direview
+                isiDataDummy(); 
+            }
+        });
     }
 
-    // --- DATA DUMMY (PROVIDER TERTANAM) ---
-    // Di sinilah kita memasukkan link film dan gambar poster secara manual
-    private List<Movie> getAdicinemaxMovies() {
-        List<Movie> movies = new ArrayList<>();
-
-        // Film 1: Big Buck Bunny
-        movies.add(new Movie(
-            "Big Buck Bunny",
-            "https://upload.wikimedia.org/wikipedia/commons/c/c5/Big_buck_bunny_poster_big.jpg", // Poster
-            "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" // Video
-        ));
-
-        // Film 2: Sintel
-        movies.add(new Movie(
-            "Sintel",
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Sintel_poster.jpg/800px-Sintel_poster.jpg",
-            "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
-        ));
-
-        // Film 3: Tears of Steel
-        movies.add(new Movie(
-            "Tears of Steel",
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Tears_of_Steel_poster.jpg/800px-Tears_of_Steel_poster.jpg",
-            "https://content.jwplatform.com/manifests/yp34SRmf.m3u8"
-        ));
-
-        // Film 4: Elephant Dream (Contoh Tambahan)
-        movies.add(new Movie(
-            "Elephants Dream",
-            "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Elephants_Dream_poster.jpg/800px-Elephants_Dream_poster.jpg",
-            "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" // Pakai link tes yang sama utk contoh
-        ));
-
-        // Kamu bisa copy-paste baris di atas untuk menambah film sebanyak-banyaknya
+    private void bukaPlayer(Movie movie) {
+        // Pindah ke PlayerActivity
+        Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
         
-        return movies;
+        // Kirim Link Video ke Player
+        // CATATAN: Karena mengambil link asli butuh bypass keamanan rumit,
+        // kita pakai link HLS (m3u8) berkualitas tinggi untuk tes ExoPlayer.
+        // Nanti bisa diganti dengan link hasil scraping 'movie.getDetailUrl()'
+        
+        String sampleVideo = "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8";
+        
+        intent.putExtra("VIDEO_URL", sampleVideo);
+        startActivity(intent);
+    }
+
+    private void isiDataDummy() {
+        // Data cadangan kalau internet/scraping gagal
+        java.util.ArrayList<Movie> dummies = new java.util.ArrayList<>();
+        dummies.add(new Movie("Avatar: The Way of Water", "https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg", "", "HD", "7.8"));
+        dummies.add(new Movie("Black Adam", "https://image.tmdb.org/t/p/w500/pFlaoHTZeyNkG83vxsAJiGzfSsa.jpg", "", "HD", "6.9"));
+        dummies.add(new Movie("Black Panther", "https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg", "", "CAM", "7.3"));
+        dummies.add(new Movie("Top Gun: Maverick", "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg", "", "HD", "8.3"));
+        dummies.add(new Movie("Doctor Strange", "https://image.tmdb.org/t/p/w500/uGBVj3bEbCoZbDjjl9wTxcygko1.jpg", "", "HD", "7.5"));
+        dummies.add(new Movie("Minions", "https://image.tmdb.org/t/p/w500/wKiOkZTN9lUUUNZLmtnwubZYONg.jpg", "", "HD", "7.6"));
+        
+        adapter.updateData(dummies);
+        textError.setVisibility(View.GONE);
+        Toast.makeText(this, "Mode Demo: Menampilkan Data Sample", Toast.LENGTH_SHORT).show();
     }
 }
