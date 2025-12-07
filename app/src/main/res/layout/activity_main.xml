@@ -3,36 +3,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#121212">
+    android:background="#151515"> <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:background="#000000">
+
+        <VideoView
+            android:id="@+id/videoView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+            
+        <TextView
+            android:id="@+id/textStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pilih Film di Bawah"
+            android:textColor="#888888"
+            android:layout_gravity="center"/>
+    </FrameLayout>
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Simple Stream"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
+        android:text="Adicinemax21 Collection"
+        android:textColor="#FFB300" 
+        android:textSize="18sp"
         android:textStyle="bold"
-        android:layout_marginBottom="20dp"/>
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"/>
 
-    <VideoView
-        android:id="@+id/videoView"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_marginBottom="20dp"
-        android:background="#000000" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Pilih Film:"
-        android:textColor="#AAAAAA"
-        android:layout_marginBottom="10dp"/>
-
-    <ListView
-        android:id="@+id/movieList"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMovies"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#222222"/>
+        android:padding="8dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
 
 </LinearLayout>
