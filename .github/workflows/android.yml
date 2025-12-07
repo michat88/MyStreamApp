@@ -18,14 +18,17 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Gradle
+    # Kita pakai cara manual tanpa plugin "setup-gradle" yang canggih
+    # supaya tidak perlu menghubungi server cache yang sedang error
+    - name: Setup Gradle Manual
       uses: gradle/actions/setup-gradle@v3
       with:
-        # PERHATIKAN TANDA KUTIP DI BAWAH INI
         gradle-version: '8.0'
+        cache-read-only: false # Coba paksa matikan/abaikan jika error
       
     - name: Build APK
-      run: gradle assembleDebug --stacktrace
+      # Tambahkan '--no-build-cache' untuk melarang penggunaan cache
+      run: gradle assembleDebug --no-build-cache --stacktrace
       
     - name: Upload APK
       uses: actions/upload-artifact@v4
