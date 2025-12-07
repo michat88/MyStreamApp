@@ -1,7 +1,8 @@
 package com.example.simplestream;
 
-import java.io.Serializable;
+import java.io.Serializable; // PENTING 1
 
+// PENTING 2: implements Serializable
 public class Movie implements Serializable {
     private String title;
     private String posterUrl;
@@ -9,6 +10,7 @@ public class Movie implements Serializable {
     private String quality;
     private String rating;
 
+    // Constructor Kosong (Wajib ada biar aman)
     public Movie() { }
 
     public Movie(String title, String posterUrl, String detailUrl, String quality, String rating) {
