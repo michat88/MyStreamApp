@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.simplestream"
-        minSdk 24
+        minSdk 21
         targetSdk 33
         versionCode 1
         versionName "1.0"
@@ -21,16 +21,31 @@ android {
         }
     }
     
-    // INI JURUS RAHASIANYA:
-    // Abaikan error kecil supaya aplikasi tetap jadi
+    // Opsi agar tidak error saat compile
     lintOptions {
         checkReleaseBuilds false
         abortOnError false
     }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
+    // Komponen Dasar Android
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // ALAT BARU UNTUK TAMPILAN KEREN:
+    // 1. RecyclerView (Untuk bikin Grid kotak-kotak)
+    implementation 'androidx.recyclerview:recyclerview:1.3.0'
+    
+    // 2. CardView (Supaya poster punya sudut melengkung/rounded)
+    implementation 'androidx.cardview:cardview:1.0.0'
+    
+    // 3. Glide (Untuk memuat gambar poster dari internet otomatis)
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
 }
