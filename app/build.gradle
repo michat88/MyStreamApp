@@ -21,7 +21,7 @@ android {
         }
     }
     
-    // Opsi agar tidak error saat compile
+    // Mencegah error remeh membatalkan build
     lintOptions {
         checkReleaseBuilds false
         abortOnError false
@@ -34,18 +34,25 @@ android {
 }
 
 dependencies {
-    // Komponen Dasar Android
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
-    // ALAT BARU UNTUK TAMPILAN KEREN:
-    // 1. RecyclerView (Untuk bikin Grid kotak-kotak)
+    // LAYOUT (Tampilan)
     implementation 'androidx.recyclerview:recyclerview:1.3.0'
-    
-    // 2. CardView (Supaya poster punya sudut melengkung/rounded)
     implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     
-    // 3. Glide (Untuk memuat gambar poster dari internet otomatis)
+    // GAMBAR (Poster)
     implementation 'com.github.bumptech.glide:glide:4.15.1'
+    
+    // PLAYER CANGGIH (ExoPlayer)
+    // Ini yang bikin bisa putar banyak format & subtitle
+    implementation 'com.google.android.exoplayer:exoplayer:2.18.7'
+    
+    // SCRAPING (Pengambil Data Website Adicinemax)
+    implementation 'org.jsoup:jsoup:1.15.4'
+    
+    // JARINGAN (Koneksi Internet)
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
 }
